@@ -1,0 +1,85 @@
+import org.gradle.internal.os.OperatingSystem
+
+apply plugin: 'java' 
+apply plugin: 'jacoco'
+
+sourceCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation "com.badlogicgames.gdx:gdx:$gdxVersion"
+    implementation "com.badlogicgames.gdx:gdx-backend-lwjgl3:$gdxVersion"
+    implementation "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-desktop"
+}
+
+sourceSets.main.java.srcDirs = [ "src/" ]
+sourceSets.test.java.srcDirs = [ "test/" ]
+sourceSets.main.resources.srcDirs = ["../assets"]
+
+project.ext.mainClassName = "com.minecraft.game.DesktopLauncher"
+project.ext.assetsDir = new File("../assets")
+
+task run(type: JavaExec) {
+    dependsOn classes
+    mainClass = project.mainClassName
+    classpath = sourceSets.main.runtimeClasspath
+    standardInput = System.in
+    workingDir = project.assetsDir
+    ignoreExitValue = true
+
+    if (OperatingSystem.current().isMacOsX()) {
+        jvmArgs = ['-XstartOnFirstThread']
+    }
+}
+
+task debug(type: JavaExec) {
+    dependsOn classes
+    mainClass = project.mainClassName
+    classpath = sourceSets.main.runtimeClasspath
+    standardInput = System.in
+    workingDir = project.assetsDir
+    ignoreExitValue = true
+    debug = true
+}
+
+task dist(type: Jar) {
+    // Set the custom name for the JAR file
+    archiveFileName = "team6-${version}.jar"
+
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    manifest {
+        attributes 'Main-Class': project.mainClassName
+    }
+    dependsOn configurations.runtimeClasspath
+    from {
+        configurations.runtimeClasspath.findAll { it.isDirectory() }.collect { it }
+        configurations.runtimeClasspath.findAll { !it.isDirectory() }.collect { zipTree(it) }
+    }
+    with jar
+}
+
+eclipse.project.name = appName + "-core"
+
+test {
+        useJUnitPlatform()
+
+        testLogging {
+            events "passed", "skipped", "failed"
+        }
+
+        finalizedBy jacocoTestReport
+
+        workingDir = rootProject.projectDir
+    }
+
+jacocoTestReport {
+    dependsOn test
+
+    reports {
+        html.required.set(true)
+        xml.required.set(true)
+    }
+}

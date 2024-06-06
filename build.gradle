@@ -1,0 +1,60 @@
+buildscript {
+    
+    repositories {
+        mavenLocal()
+        mavenCentral()
+        gradlePluginPortal()
+        maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
+        maven { url "https://oss.sonatype.org/content/repositories/releases/" }
+        google()
+    }
+    dependencies {
+        classpath "com.badlogicgames.gdx:gdx-ai:1.8.1"
+    }
+}
+
+allprojects {
+    apply plugin: "eclipse"
+
+    version = '1.0'
+    ext {
+        appName = "Minecraft"
+        gdxVersion = '1.12.1'
+        junitVersion = '5.10.2'
+    }
+
+    repositories {
+        mavenLocal()
+        mavenCentral()
+        google()
+        gradlePluginPortal()
+        maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
+        maven { url "https://oss.sonatype.org/content/repositories/releases/" }
+        maven { url "https://jitpack.io" }
+    }
+}
+
+project(":core") {
+    apply plugin: "java-library"
+
+    dependencies {
+        api "com.badlogicgames.gdx:gdx-backend-lwjgl3:$gdxVersion"
+        api "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-desktop"
+        api "com.badlogicgames.gdx:gdx-box2d-platform:$gdxVersion:natives-desktop"
+
+        api "com.badlogicgames.gdx:gdx:$gdxVersion"
+        api "com.badlogicgames.gdx:gdx-box2d:$gdxVersion"
+
+        // JUnit 5
+        testImplementation(platform("org.junit:junit-bom:$junitVersion"))
+        testImplementation("org.junit.jupiter:junit-jupiter-api:$junitVersion'))")
+        testImplementation('org.junit.jupiter:junit-jupiter')
+        testRuntimeOnly('org.junit.platform:junit-platform-launcher')
+
+        // mockito
+        testImplementation('org.mockito:mockito-junit-jupiter:5.11.0')
+
+        // headless
+        testImplementation("com.badlogicgames.gdx:gdx-backend-headless:$gdxVersion")
+    }
+}
